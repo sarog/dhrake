@@ -32,7 +32,9 @@ import java.util.regex.Pattern;
 
 public class DhrakeInit extends GhidraScript {
 
-	static DataType CHAR = CharDataType.dataType;
+	private static final boolean ENABLE_TASK_MONITOR_PROGRESS_BAR = true;
+
+	static DataType CHAR                                      = CharDataType.dataType;
 	static DataType BYTE = ByteDataType.dataType;
 	static DataType WCHAR = WideCharDataType.dataType;
 	static DataType LPCSTR = PointerDataType.getPointer(CHAR, 4);
@@ -207,19 +209,21 @@ public class DhrakeInit extends GhidraScript {
 		} catch (CancelledException e) {
 			return false;
 		}
+
 		Pattern pattern = Pattern.compile("^\\s*MakeNameEx\\((?:0x)?([A-Fa-f0-9]+),\\s*\"([^\"]*)\",\\s*([xA-Fa-f0-9]+)\\);\\s*$");
 
-
-		try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(idc));  Scanner sc = new Scanner(inputStream, StandardCharsets.UTF_8)) {
-			//count lines
-			while (sc.hasNextLine()) {
-				sc.nextLine();
-				linecount++;
+		if (ENABLE_TASK_MONITOR_PROGRESS_BAR) {
+			try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(idc)); Scanner sc = new Scanner(inputStream, StandardCharsets.UTF_8)) {
+				// count lines
+				while (sc.hasNextLine()) {
+					sc.nextLine();
+					linecount++;
+				}
+				monitor.setMaximum(linecount);
+			} catch (IOException e) {
+				this.logMsg("file not found: %s", idc.toPath());
+				return false;
 			}
-			monitor.setMaximum(linecount);
-		} catch (IOException e) {
-			this.logMsg("file not found: %s", idc.toPath());
-			return false;
 		}
 
 		try (BufferedInputStream inputStream  = new BufferedInputStream(new FileInputStream(idc));  Scanner sc = new Scanner(inputStream, StandardCharsets.UTF_8)) {
@@ -376,6 +380,7 @@ public class DhrakeInit extends GhidraScript {
 	public void run()  {
 		monitor.setCancelEnabled(true);
 		monitor.setShowProgressValue(true);
+        monitor.setIndeterminate(true);
 
 		if (!this.importSymbolsFromIDC())
 			return;
