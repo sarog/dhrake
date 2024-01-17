@@ -93,13 +93,13 @@ public class DhrakeParseClass extends GhidraScript {
                             if (name == null) {
                                 name = String.format("FUN_%08X", offset);
                             }
-                            this.log(String.format("defining function at 0x%08X, name %s", offset, name));
+                            this.log("Defining function at 0x%08X, name %s", offset, name);
                             function = this.createFunction(entryPoint, name);
                         }
                         if (function == null) break;
                         function.setParentNamespace(classNamespace);
                         name = function.getName();
-                        this.log(String.format("adding function %s::%s", className, name));
+                        this.log("Adding function %s::%s", className, name);
                         vtbl.add(this.addFnType(function), 4, name, "");
                     } catch (Exception e) {
                         break;
